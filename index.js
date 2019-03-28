@@ -18,6 +18,7 @@ server.get('/', (req,res) => {
 // register and add user
 server.post('/api/register', (req, res) => {
    const user = req.body
+   user.password = bcrypt.hashSync(user.password)
    db('users').insert(user)
    .then(ids => {
      res.status(201).json({id: ids[0]})
@@ -30,10 +31,15 @@ server.post('/api/register', (req, res) => {
 
 // login
 server.post('/api/login', (req, res) => {
+  // check that username exists AND that passwords match
   const bodyUser = req.body;
   db('users').where('username', bodyUser.username)
   .then(users => {
-    if (users.length && bodyUser.password === users[0].password) {
+    
+    //console.log('body user', bodyUser); // comparing bodyuser with hashed database user
+   // console.log('database user', users[0])
+    // username valid    hash from client == hash from db
+    if (users.length && bcrypt.compareSync(bodyUser.password, users[0].password)) {
       res.json({info: "correct"})
     } else {
       res.status(404).json({error: "Invalid username or password"})
