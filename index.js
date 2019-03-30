@@ -3,6 +3,7 @@ const helmet = require('helmet')
 const cors = require('cors')
 const bcrypt = require('bcryptjs')
 const session = require('express-session')
+const knexSessionStore = require('connect-session-knex')(session)
 
 const db = require('./database/dbConfig')
 const dbHelpers = require('./database/dbHelpers')
@@ -22,6 +23,14 @@ const sessionConfig = {
   httpOnly: true, // cannot access the cookie from js using document.cookie
   resave: false,
   saveUninitialized: false, // laws against setting cookies automactially
+
+  store: new knexSessionStore({
+    knex: db, // passing existing data base
+    tablename: 'sessions',
+    creatable: true,
+    sidfieldname: 'sid', // Field name in table to use for storing session ids. Defaults to 'sid'.
+    clearInterval: 1000 *60 *60, // in ms
+  })
 }
 
 server.use(helmet())
