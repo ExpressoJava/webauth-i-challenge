@@ -73,33 +73,34 @@ server.post('/api/login', (req, res) => {
 
 // restricted to authorized user only
 
-function restricted(req, res, next) {
-  const { username, password } = req.headers;
+// function restricted(req, res, next) {
+//   const { username, password } = req.headers;
 
-  if (username && password) {
+//   if (username && password) {
 
-  dbHelpers.findBy({ username })
-    .first()
-    .then(user => {
-       // step: check if password match
+//   dbHelpers.findBy({ username })
+//     .first()
+//     .then(user => {
+//        // step: check if password match
 
-      if (user && bcrypt.compareSync(password, user.password)) {
-      next();
+//       if (user && bcrypt.compareSync(password, user.password)) {
+//       next();
        
-      } else {
-        res.status(401).json({ message: 'Invalid credentials: You shall not pass!' });
-      }
-    })
-    .catch(error => {
-      res.status(400).json({message: 'No credentials provided'});
-    });
-    } else {
-  res.status(401).json({message: 'No credentials provided'});
-    }
-}
+//       } else {
+//         res.status(401).json({ message: 'Invalid credentials: You shall not pass!' });
+//       }
+//     })
+//     .catch(error => {
+//       res.status(400).json({message: 'No credentials provided'});
+//     });
+//     } else {
+//   res.status(401).json({message: 'No credentials provided'});
+//     }
+// }
 
-function protected(req, res, next){
-	if (req.session && req.session.username){
+// simplify above with session
+function restricted (req, res, next){
+	if (req.session && req.session.users){
 		next();
 	} else {
 		res.status(401).json({ message: 'Please login.' });
@@ -107,7 +108,7 @@ function protected(req, res, next){
 }
 
 // protect his route, only authorized user should see it
-server.get('/api/users', protected, (req, res) => {
+server.get('/api/users', restricted, (req, res) => {
   dbHelpers.find()
     .then(users => {
       res.json(users);
