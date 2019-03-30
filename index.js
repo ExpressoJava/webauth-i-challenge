@@ -43,6 +43,16 @@ server.get('/', (req,res) => {
   res.send('Server is alive!')
 })
 
+//endpoint to test if backend is connected to reactp app
+server.get('/api/clients', (req, res) => {
+  const clients = [
+    {id: 1, firstName: 'John', lastName: 'Jones'},
+    {id: 1, firstName: 'Steve', lastName: 'Jones'},
+    {id: 1, firstName: 'Mary', lastName: 'Jones'}
+  ]
+  res.json(clients)
+})
+
 // register and add user
 server.post('/api/register', (req, res) => {
    const user = req.body
