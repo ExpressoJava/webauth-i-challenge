@@ -9,9 +9,26 @@ const dbHelpers = require('./database/dbHelpers')
 
 const server = express();
 
+
+
+// configure express-session middleware
+const sessionConfig = {
+  name: 'SessionandCookies',
+  secret: 'stop haxing my info ',
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24, // in ms. can also just put the total value in ms
+    secure: false, //used over https only. put false for demo purposes. 
+  },
+  httpOnly: true, // cannot access the cookie from js using document.cookie
+  resave: false,
+  saveUninitialized: false, // laws against setting cookies automactially
+}
+
 server.use(helmet())
 server.use(express.json())
 server.use(cors())
+server.use(session(sessionConfig)) //passing session config object to middleware
+  
 
 server.get('/', (req,res) => {
   res.send('Server is alive!')
@@ -42,6 +59,7 @@ server.post('/api/login', (req, res) => {
    // console.log('database user', users[0])
     // username valid    hash from client == hash from db
     if (users.length && bcrypt.compareSync(bodyUser.password, users[0].password)) {
+      req.session.users =  users // logging in with session
       res.json({info: "correct"})
     } else {
       res.status(404).json({error: "Invalid username or password"})
@@ -89,7 +107,7 @@ function protected(req, res, next){
 }
 
 // protect his route, only authorized user should see it
-server.get('/api/users', restricted, (req, res) => {
+server.get('/api/users', protected, (req, res) => {
   dbHelpers.find()
     .then(users => {
       res.json(users);
